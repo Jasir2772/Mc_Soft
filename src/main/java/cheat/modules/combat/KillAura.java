@@ -1,12 +1,15 @@
 package cheat.modules.combat;
 
-import cheat.core.*;
+import cheat.core.Module;
+import cheat.core.AntiCheatBypass;
+import cheat.core.Optimizer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Hand;
 
 public class KillAura extends Module {
+// ... qolgan kod o'zgarmaydi
     private int cooldown = 0;
     private LivingEntity target = null;
     private int targetTicks = 0;
