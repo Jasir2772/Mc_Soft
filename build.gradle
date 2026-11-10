@@ -1,0 +1,18 @@
+// build.gradle — MC 1.20.1 | Yarn 1.20.1+build.10 | Java 17 | Pojav-safe
+plugins { id 'fabric-loom' version '1.6-SNAPSHOT' }
+version = '2.0.0'
+group = 'cheat'
+base { archivesName = 'cheatmod' }
+dependencies {
+    minecraft "com.mojang:minecraft:1.20.1"
+    mappings "net.fabricmc:yarn:1.20.1+build.10:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.15.11"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.92.2+1.20.1"
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") { expand "version": project.version }
+}
+java { withSourcesJar() }
+tasks.withType(JavaCompile).configureEach { it.options.release = 17 }
