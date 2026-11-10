@@ -1,14 +1,13 @@
-// src/main/java/cheat/modules/movement/Fly.java
 package cheat.modules.movement;
 
-import cheat.core.*;
+import cheat.core.Module;
 import net.minecraft.client.MinecraftClient;
 
 public class Fly extends Module {
     public double speed = 0.5;
     public double vertical = 0.3;
 
-    public Fly() { super("Fly", "Uchish (packet-safe)", Category.MOVEMENT); key = org.lwjgl.glfw.GLFW.GLFW_KEY_F; }
+    public Fly() { super("Fly", "Fly mode", Category.MOVEMENT); key = org.lwjgl.glfw.GLFW.GLFW_KEY_F; }
 
     @Override public void onTick() {
         MinecraftClient mc = MinecraftClient.getInstance();
