@@ -1,8 +1,6 @@
-// src/main/java/cheat/mixin/GameRendererMixin.java
 package cheat.mixin;
 
 import cheat.core.ModuleManager;
-import cheat.core.Optimizer;
 import cheat.modules.render.ESP;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
