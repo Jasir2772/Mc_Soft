@@ -1,12 +1,16 @@
 package cheat.modules.combat;
 
-import cheat.core.*;
+import cheat.core.Module;
+import cheat.core.Setting;
+import cheat.core.AntiCheatBypass;
+import cheat.core.Optimizer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -124,4 +128,4 @@ public class KillAura extends Module {
         double h = Math.sqrt(dx * dx + dz * dz);
         return new float[]{(float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0), (float) -Math.toDegrees(Math.atan2(dy, h))};
     }
-}
+            }
