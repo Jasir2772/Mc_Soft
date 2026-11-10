@@ -1,0 +1,12 @@
+// src/main/resources/assets/cheatmod/lang/en_us.json
+{
+  "category.cheatmod": "CheatMod Pro",
+  "key.cheatmod.gui": "Open GUI",
+  "key.cheatmod.xray": "XRay",
+  "key.cheatmod.aura": "KillAura",
+  "key.cheatmod.fullbright": "Fullbright",
+  "key.cheatmod.aura": "KillAura",
+  "key.cheatmod.speed": "Speed",
+  "key.cheatmod.fly": "Fly",
+  "key.cheatmod.totem": "AutoTotem"
+}
