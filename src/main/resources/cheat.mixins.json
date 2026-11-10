@@ -1,0 +1,8 @@
+// src/main/resources/cheat.mixins.json
+{
+  "required": true,
+  "package": "cheat.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": ["BlockRenderMixin", "GameRendererMixin"],
+  "injectors": { "defaultRequire": 1 }
+}
