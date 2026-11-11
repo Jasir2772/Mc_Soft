@@ -3,112 +3,166 @@ package cheat.gui;
 import cheat.core.Module;
 import cheat.core.ModuleManager;
 import cheat.core.Setting;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class ClickGUI extends Screen {
     private final Map<Module.Category, List<Module>> cats = new LinkedHashMap<>();
     private final Set<Module> expanded = new HashSet<>();
-    private int scroll = 0;
+    private int scrollY = 0;
+    
+    // Animatsiya uchun
+    private float openAnim = 0f;
+    private long lastRender = System.currentTimeMillis();
 
     public ClickGUI() {
         super(Text.literal("CheatMod Pro"));
+        // Kategoriyalarni to'g'ri tartibda joylashtirish
         for (Module.Category c : Module.Category.values()) cats.put(c, new ArrayList<>());
-        for (Module m : ModuleManager.modules) cats.get(m.category).add(m);
-    }
-
-    @Override public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        ctx.fill(0, 0, width, height, 0xA0000000);
-        int x = 20, y = 40 - scroll;
-        int maxColumnHeight = 0;
-
-        for (var e : cats.entrySet()) {
-            Module.Category cat = e.getKey();
-            List<Module> ms = e.getValue();
-            int w = 180;
-            int startY = y;
-            
-            ctx.fill(x, y, x + w, y + 20, 0xFF1A1A1A);
-            ctx.drawText(textRenderer, "§6" + cat.name(), x + 8, y + 6, 0xFFFFFF, false);
-            y += 22;
-            
-            for (Module m : ms) {
-                boolean hover = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + 18;
-                ctx.fill(x, y, x + w, y + 18, hover ? 0xFF303030 : 0xFF202020);
-                if (m.enabled) ctx.fill(x, y, x + 3, y + 18, 0xFF00FF00);
-                
-                ctx.drawText(textRenderer, m.name, x + 10, y + 5, m.enabled ? 0xFF55FF55 : 0xFFAAAAAA, false);
-                
-                if (!m.settings.isEmpty()) {
-                    ctx.drawText(textRenderer, expanded.contains(m) ? "v" : ">", x + w - 15, y + 5, 0xFFFFAA00, false);
-                }
-                y += 20;
-
-                if (expanded.contains(m)) {
-                    for (Setting s : m.settings) {
-                        boolean hovS = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + 15;
-                        ctx.fill(x + 5, y, x + w, y + 15, hovS ? 0xFF404040 : 0xFF252525);
-                        ctx.drawText(textRenderer, "  " + s.name, x + 10, y + 3, 0xFFCCCCCC, false);
-                        ctx.drawText(textRenderer, s.getValueString(), x + w - 30, y + 3, 0xFFFFAA00, false);
-                        y += 16;
-                    }
-                }
+        for (Module m : ModuleManager.modules) {
+            if (cats.containsKey(m.category)) {
+                cats.get(m.category).add(m);
             }
-            y += 15;
-            maxColumnHeight = Math.max(maxColumnHeight, y - startY);
-            
-            if (x + 200 < width) x += 200;
-            else { x = 20; y += maxColumnHeight + 10; maxColumnHeight = 0; }
         }
     }
 
-    @Override public boolean mouseClicked(double mx, double my, int button) {
-        int x = 20, y = 40 - scroll;
-        int maxColumnHeight = 0;
+    @Override
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        // Silliq ochilish animatsiyasi
+        long now = System.currentTimeMillis();
+        float dt = (now - lastRender) / 1000f;
+        lastRender = now;
+        openAnim = MathHelper.clamp(openAnim + dt * 4f, 0f, 1f);
 
+        // Orqa fonni qoraytirish (Blur o'rniga shaffof qora)
+        ctx.fill(0, 0, width, height, (int) (0xA0000000 * openAnim));
+
+        // Ustunlar uchun o'lchamlar
+        int colWidth = 140;
+        int spacing = 10;
+        int totalW = (colWidth + spacing) * cats.size() - spacing;
+        int startX = (width - totalW) / 2;
+        int startY = 40 - scrollY;
+
+        int i = 0;
+        for (var e : cats.entrySet()) {
+            Module.Category cat = e.getKey();
+            List<Module> ms = e.getValue();
+            
+            // Ochilish animatsiyasi (pastdan yuqoriga)
+            int currentY = startY + (int) ((1f - openAnim) * 50);
+            int x = startX + i * (colWidth + spacing);
+            
+            // Ustun foni (yumaloq burchakli, qoramtir shisha)
+            ctx.fill(x, currentY, x + colWidth, currentY + 20, 0xFF1E1E1E);
+            ctx.drawTextWithShadow(textRenderer, "§l" + cat.name(), x + 10, currentY + 6, 0xFFFFFF);
+            
+            // Kategoriya chizig'i
+            ctx.fill(x, currentY + 20, x + colWidth, currentY + 21, 0xFF555555);
+
+            int itemY = currentY + 22;
+            for (Module m : ms) {
+                boolean hover = mouseX >= x && mouseX < x + colWidth && mouseY >= itemY && mouseY < itemY + 16;
+                int bgColor = m.enabled ? 0xFF2C2C2C : 0xFF151515;
+                if (hover) bgColor = 0xFF3A3A3A;
+                
+                ctx.fill(x, itemY, x + colWidth, itemY + 16, bgColor);
+                
+                // Modul nomi
+                int textColor = m.enabled ? 0xFF55FF55 : 0xFFAAAAAA;
+                ctx.drawTextWithShadow(textRenderer, m.name, x + 8, itemY + 4, textColor);
+                
+                // Sozlamalar borligini ko'rsatish
+                if (!m.settings.isEmpty()) {
+                    ctx.drawTextWithShadow(textRenderer, expanded.contains(m) ? "▼" : "▶", x + colWidth - 15, itemY + 4, 0xFFFFAA00);
+                }
+                
+                itemY += 16;
+
+                // Sozlamalar ochilgan bo'lsa
+                if (expanded.contains(m)) {
+                    for (Setting s : m.settings) {
+                        boolean hovS = mouseX >= x && mouseX < x + colWidth && mouseY >= itemY && mouseY < itemY + 14;
+                        ctx.fill(x, itemY, x + colWidth, itemY + 14, hovS ? 0xFF404040 : 0xFF1F1F1F);
+                        
+                        ctx.drawTextWithShadow(textRenderer, "  " + s.name, x + 6, itemY + 3, 0xFFCCCCCC);
+                        ctx.drawTextWithShadow(textRenderer, s.getValueString(), x + colWidth - 15 - textRenderer.getWidth(s.getValueString()), itemY + 3, 0xFFFFAA00);
+                        
+                        itemY += 14;
+                    }
+                    // Sozlamalar ostidan ajratuvchi chiziq
+                    ctx.fill(x, itemY, x + colWidth, itemY + 1, 0xFF333333);
+                    itemY += 1;
+                }
+            }
+            // Ustun oxiri
+            ctx.fill(x, itemY, x + colWidth, itemY + 2, 0xFF1E1E1E);
+            i++;
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        int colWidth = 140;
+        int spacing = 10;
+        int totalW = (colWidth + spacing) * cats.size() - spacing;
+        int startX = (width - totalW) / 2;
+        int startY = 40 - scrollY;
+
+        int i = 0;
         for (var e : cats.entrySet()) {
             List<Module> ms = e.getValue();
-            int w = 180;
-            int startY = y;
-            y += 22;
+            int x = startX + i * (colWidth + spacing);
+            int currentY = startY;
             
+            int itemY = currentY + 22;
             for (Module m : ms) {
-                if (mx >= x && mx < x + w && my >= y && my < y + 18) {
-                    if (mx >= x + w - 20) { // Kengaytirish tugmasi
-                        if (expanded.contains(m)) expanded.remove(m); else expanded.add(m);
+                if (mx >= x && mx < x + colWidth && my >= itemY && my < itemY + 16) {
+                    if (mx >= x + colWidth - 20 && !m.settings.isEmpty()) {
+                        // Sozlamalarni ochish/yopish
+                        if (expanded.contains(m)) expanded.remove(m);
+                        else expanded.add(m);
                     } else {
+                        // Modulni yoqish/o'chirish
                         m.toggle();
+                        // Agar yoqilsa, ovoz effekti (ixtiyoriy)
                     }
                     return true;
                 }
-                y += 20;
+                itemY += 16;
 
                 if (expanded.contains(m)) {
                     for (Setting s : m.settings) {
-                        if (mx >= x && mx < x + w && my >= y && my < y + 15) {
+                        if (mx >= x && mx < x + colWidth && my >= itemY && my < itemY + 14) {
                             s.onClick();
                             return true;
                         }
-                        y += 16;
+                        itemY += 14;
                     }
+                    itemY += 1;
                 }
             }
-            y += 15;
-            maxColumnHeight = Math.max(maxColumnHeight, y - startY);
-            
-            if (x + 200 < width) x += 200;
-            else { x = 20; y += maxColumnHeight + 10; maxColumnHeight = 0; }
+            i++;
         }
         return super.mouseClicked(mx, my, button);
     }
 
-    @Override public boolean mouseScrolled(double mx, double my, double amt) {
-        scroll = Math.max(0, scroll - (int)(amt * 20));
+    @Override
+    public boolean mouseScrolled(double mx, double my, double amt) {
+        // Ekranni pastga-yuqoriga surish
+        scrollY = Math.max(0, scrollY - (int) (amt * 20));
         return true;
     }
 
-    @Override public boolean shouldPause() { return false; }
+    @Override
+    public boolean shouldPause() {
+        return false;
+    }
 }
